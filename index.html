@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>一言API</title>
     <style>
         * {
@@ -11,17 +11,30 @@
             box-sizing: border-box;
         }
 
+        html {
+            height: 100%;
+            overflow: hidden;
+            touch-action: none;
+        }
+
         body {
             font-family: system-ui, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            height: 100vh;
+            height: 100dvh; /* 动态视口高度，更适合移动端 */
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
             color: #333;
-            position: relative;
-            overflow: auto;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            touch-action: none;
+            -webkit-overflow-scrolling: touch;
         }
 
         /* 毛玻璃背景效果 */
@@ -123,6 +136,11 @@
             transition: transform 0.3s ease;
             position: relative;
             z-index: 10;
+            max-height: calc(100vh - 40px);
+            max-height: calc(100dvh - 40px);
+            overflow-y: auto;
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
         }
 
         .container:hover {
@@ -209,6 +227,7 @@
                 0 4px 15px rgba(102, 126, 234, 0.4),
                 inset 0 1px 0 rgba(255, 255, 255, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            touch-action: manipulation;
         }
 
         .fetch-button:hover {
@@ -271,6 +290,7 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
             z-index: 1000;
+            touch-action: manipulation;
         }
 
         .github-link:hover {
@@ -329,11 +349,9 @@
         @media (max-width: 768px) {
             body {
                 padding: 15px;
-                /* 保持居中对齐 */
                 align-items: center;
                 justify-content: center;
-                /* 但确保有足够的滚动空间 */
-                min-height: 100vh;
+                padding-top: 20px;
             }
 
             .glass-orb {
@@ -344,8 +362,8 @@
                 margin: 0;
                 padding: 25px 20px;
                 transform: none !important;
-                /* 确保容器可以正常滚动 */
-                max-height: calc(100vh - 30px);
+                max-height: calc(100vh - 40px);
+                max-height: calc(100dvh - 40px);
                 overflow-y: auto;
             }
 
@@ -364,25 +382,20 @@
             .github-footer {
                 display: block;
             }
-
-            /* 移动端特定的垂直居中处理 */
-            @media (max-height: 700px) {
-                body {
-                    align-items: flex-start;
-                    padding-top: 20px;
-                }
-            }
         }
 
         /* 超小屏幕适配 */
         @media (max-width: 480px) {
             body {
                 padding: 10px;
+                padding-top: 15px;
             }
             
             .container {
                 padding: 20px 15px;
                 border-radius: 15px;
+                max-height: calc(100vh - 30px);
+                max-height: calc(100dvh - 30px);
             }
             
             h1 {
@@ -392,6 +405,19 @@
             .fetch-button {
                 padding: 10px 25px;
                 font-size: 1rem;
+            }
+        }
+
+        /* 超短屏幕（横屏手机等）适配 */
+        @media (max-height: 600px) {
+            body {
+                align-items: flex-start;
+                padding-top: 10px;
+            }
+            
+            .container {
+                max-height: calc(100vh - 20px);
+                max-height: calc(100dvh - 20px);
             }
         }
     </style>
@@ -415,8 +441,6 @@
         
         <div class="api-info">
             <p><strong>API地址:</strong> <code>/api</code></p>
-            <p><strong>请求方法:</strong> <code>GET</code></p>
-            <p><strong>返回格式:</strong> <code>JSON</code></p>
         </div>
         
         <div class="demo-section">
@@ -442,6 +466,32 @@
     <script>
         let isLoading = false;
         
+        // 防止iOS Safari的橡皮筋滚动
+        document.addEventListener('touchmove', function(e) {
+            if (e.target.closest('.container')) {
+                // 如果触摸发生在容器内，允许滚动
+                return;
+            }
+            // 否则阻止默认行为
+            e.preventDefault();
+        }, { passive: false });
+
+        // 防止双击缩放
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        });
+
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(e) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
         async function fetchHitokoto() {
             if (isLoading) return;
             
@@ -454,7 +504,7 @@
             button.disabled = true;
             
             try {
-                const response = await fetch('/api');
+                const response = await fetch('https://api-hitokoto.wely.fun/api');
                 const data = await response.json();
                 
                 resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
