@@ -1,8 +1,8 @@
 # 一言API - Cloudflare Pages版
 
-![GitHub stars](https://img.shields.io/github/stars/welyfun/hitokoto-api?style=flat-square)
-![GitHub forks](https://img.shields.io/github/forks/welyfun/hitokoto-api?style=flat-square)
-![GitHub license](https://img.shields.io/github/license/welyfun/hitokoto-api?style=flat-square)
+![GitHub stars](https://img.shields.io/github/stars/welyfun/api-hitokoto?style=flat-square)
+![GitHub forks](https://img.shields.io/github/forks/welyfun/api-hitokoto?style=flat-square)
+![GitHub license](https://img.shields.io/github/license/welyfun/api-hitokoto?style=flat-square)
 
 一个基于 Cloudflare Pages 部署的一言API接口，提供随机的动漫、文学、影视等句子。
 
