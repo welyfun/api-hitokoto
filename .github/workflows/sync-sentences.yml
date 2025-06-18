@@ -1,0 +1,98 @@
+name: Sync Sentences from sentences-bundle
+
+on:
+  schedule:
+    # 每天 03:00 UTC 运行
+    - cron: '0 3 * * *'
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  sync-sentences:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout api-hitokoto repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: Setup Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+    - name: Clone sentences-bundle repository
+      run: |
+        git clone https://github.com/hitokoto-osc/sentences-bundle.git temp-sentences-bundle
+
+    - name: Check for changes and sync
+      run: |
+        # 检查 sentences-bundle 仓库中是否存在 sentences 文件夹
+        if [ ! -d "temp-sentences-bundle/sentences" ]; then
+          echo "sentences folder not found in sentences-bundle repository"
+          exit 1
+        fi
+        
+        # 创建 sentences 文件夹（如果不存在）
+        mkdir -p sentences
+        
+        # 比较两个文件夹的内容
+        if ! diff -r sentences/ temp-sentences-bundle/sentences/ > /dev/null 2>&1; then
+          echo "Changes detected in sentences folder"
+          
+          # 备份当前的 sentences 文件夹
+          if [ -d "sentences" ]; then
+            rm -rf sentences.backup 2>/dev/null || true
+            cp -r sentences sentences.backup
+          fi
+          
+          # 删除当前的 sentences 文件夹内容
+          rm -rf sentences/*
+          
+          # 复制新的内容
+          cp -r temp-sentences-bundle/sentences/* sentences/
+          
+          # 检查是否有文件变更
+          if git diff --quiet sentences/; then
+            echo "No actual file changes detected after sync"
+          else
+            echo "Files have been updated"
+            
+            # 获取最新的 commit hash 和信息
+            cd temp-sentences-bundle
+            LATEST_COMMIT=$(git rev-parse HEAD)
+            LATEST_COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+            cd ..
+            
+            # 添加变更并提交
+            git add sentences/
+            git commit -m "chore: sync sentences from sentences-bundle
+            
+            Latest commit: ${LATEST_COMMIT}
+            Commit message: ${LATEST_COMMIT_MSG}
+            
+            Auto-synced by GitHub Actions"
+            
+            # 推送变更
+            git push
+            
+            echo "Successfully synced sentences folder"
+          fi
+        else
+          echo "No changes detected in sentences folder"
+        fi
+
+    - name: Cleanup
+      run: |
+        rm -rf temp-sentences-bundle
+        rm -rf sentences.backup 2>/dev/null || true
+
+    - name: Summary
+      run: |
+        echo "Sync process completed at $(date)"
+        if [ -f "sentences/.gitkeep" ] || [ "$(ls -A sentences/ 2>/dev/null)" ]; then
+          echo "Current sentences folder contains: $(ls -la sentences/ | wc -l) items"
+        else
+          echo "Sentences folder is empty or doesn't exist"
+        fi

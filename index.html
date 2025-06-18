@@ -4,30 +4,480 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>一言API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #333;
+            position: relative;
+            overflow: auto;
+        }
+
+        /* 毛玻璃背景效果 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 0% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 100% 80%, rgba(255, 255, 255, 0.25) 0%, transparent 50%);
+            filter: blur(100px);
+            z-index: 1;
+        }
+
+        /* 漂浮的毛玻璃球 */
+        .glass-orb {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 2;
+        }
+
+        .glass-orb:nth-child(1) {
+            width: 200px;
+            height: 200px;
+            top: 10%;
+            left: 10%;
+            animation: float1 20s infinite ease-in-out;
+        }
+
+        .glass-orb:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            top: 60%;
+            right: 15%;
+            animation: float2 25s infinite ease-in-out;
+        }
+
+        .glass-orb:nth-child(3) {
+            width: 100px;
+            height: 100px;
+            bottom: 20%;
+            left: 20%;
+            animation: float3 30s infinite ease-in-out;
+        }
+
+        .glass-orb:nth-child(4) {
+            width: 80px;
+            height: 80px;
+            top: 30%;
+            right: 40%;
+            animation: float4 18s infinite ease-in-out;
+        }
+
+        @keyframes float1 {
+            0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
+            25% { transform: translateY(-20px) translateX(10px) scale(1.1); }
+            50% { transform: translateY(-10px) translateX(-15px) scale(0.9); }
+            75% { transform: translateY(5px) translateX(5px) scale(1.05); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
+            33% { transform: translateY(15px) translateX(-20px) scale(1.2); }
+            66% { transform: translateY(-25px) translateX(10px) scale(0.8); }
+        }
+
+        @keyframes float3 {
+            0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
+            30% { transform: translateY(-15px) translateX(20px) scale(1.1); }
+            60% { transform: translateY(10px) translateX(-10px) scale(0.9); }
+        }
+
+        @keyframes float4 {
+            0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
+            40% { transform: translateY(20px) translateX(-15px) scale(1.3); }
+            80% { transform: translateY(-10px) translateX(25px) scale(0.7); }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            max-width: 600px;
+            width: 100%;
+            transition: transform 0.3s ease;
+            position: relative;
+            z-index: 10;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        /* 容器内部的光泽效果 */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+            border-radius: 20px 20px 0 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #5a67d8;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .api-info {
+            background: rgba(248, 249, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(90, 103, 216, 0.3);
+            border-left: 4px solid #5a67d8;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .api-info p {
+            margin: 8px 0;
+            font-size: 1rem;
+        }
+
+        .api-info code {
+            background: rgba(226, 232, 240, 0.8);
+            backdrop-filter: blur(5px);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #2d3748;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .demo-section {
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .demo-title {
+            font-size: 1.3rem;
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .fetch-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 4px 15px rgba(102, 126, 234, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .fetch-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 20px rgba(102, 126, 234, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        .fetch-button:active {
+            transform: translateY(0);
+        }
+
+        #result {
+            margin-top: 20px;
+            min-height: 50px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        #result pre {
+            background: rgba(45, 55, 72, 0.9);
+            backdrop-filter: blur(10px);
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            box-shadow: 
+                inset 0 2px 4px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .error {
+            color: #e53e3e;
+            background: rgba(254, 215, 215, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #e53e3e;
+            border: 1px solid rgba(229, 62, 62, 0.3);
+        }
+
+        .github-link {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(36, 41, 46, 0.8);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 4px 15px rgba(36, 41, 46, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+        }
+
+        .github-link:hover {
+            background: rgba(3, 102, 214, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 6px 20px rgba(3, 102, 214, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .github-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .github-footer {
+            display: none;
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(226, 232, 240, 0.5);
+        }
+
+        .github-footer .github-link {
+            position: static;
+            display: inline-flex;
+            margin: 0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+                /* 保持居中对齐 */
+                align-items: center;
+                justify-content: center;
+                /* 但确保有足够的滚动空间 */
+                min-height: 100vh;
+            }
+
+            .glass-orb {
+                display: none;
+            }
+
+            .container {
+                margin: 0;
+                padding: 25px 20px;
+                transform: none !important;
+                /* 确保容器可以正常滚动 */
+                max-height: calc(100vh - 30px);
+                overflow-y: auto;
+            }
+
+            .container:hover {
+                transform: none !important;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .github-link {
+                display: none;
+            }
+
+            .github-footer {
+                display: block;
+            }
+
+            /* 移动端特定的垂直居中处理 */
+            @media (max-height: 700px) {
+                body {
+                    align-items: flex-start;
+                    padding-top: 20px;
+                }
+            }
+        }
+
+        /* 超小屏幕适配 */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px 15px;
+                border-radius: 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .fetch-button {
+                padding: 10px 25px;
+                font-size: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>一言API</h1>
-    <p>API地址: <code>/api</code></p>
-    <p>方法: GET</p>
-    <p>返回格式: JSON</p>
-    
-    <div id="demo">
-        <button onclick="fetchHitokoto()">获取一言</button>
-        <div id="result"></div>
+    <div class="glass-orb"></div>
+    <div class="glass-orb"></div>
+    <div class="glass-orb"></div>
+    <div class="glass-orb"></div>
+
+    <a href="https://github.com/welyfun/api-hitokoto" class="github-link" target="_blank">
+        <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+        </svg>
+        GitHub
+    </a>
+
+    <div class="container">
+        <h1>一言API</h1>
+        <p class="subtitle">随机获取优美的语句</p>
+        
+        <div class="api-info">
+            <p><strong>API地址:</strong> <code>/api</code></p>
+            <p><strong>请求方法:</strong> <code>GET</code></p>
+            <p><strong>返回格式:</strong> <code>JSON</code></p>
+        </div>
+        
+        <div class="demo-section">
+            <h3 class="demo-title">🎯 在线演示</h3>
+            <button class="fetch-button" onclick="fetchHitokoto()">获取一言</button>
+            <div id="result"></div>
+        </div>
+        
+        <div class="footer">
+            <p>💡 每次调用都会返回一条随机的优美语句</p>
+        </div>
+
+        <div class="github-footer">
+            <a href="https://github.com/welyfun/api-hitokoto" class="github-link" target="_blank">
+                <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.30.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+                GitHub
+            </a>
+        </div>
     </div>
     
     <script>
+        let isLoading = false;
+        
         async function fetchHitokoto() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            const resultDiv = document.getElementById('result');
+            const button = document.querySelector('.fetch-button');
+            
+            // 显示加载状态
+            button.innerHTML = '<span class="loading"></span> 获取中...';
+            button.disabled = true;
+            
             try {
                 const response = await fetch('/api');
                 const data = await response.json();
-                document.getElementById('result').innerHTML = 
-                    `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+                resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+                // 添加淡入动画
+                resultDiv.style.animation = 'none';
+                resultDiv.offsetHeight; // 触发重排
+                resultDiv.style.animation = 'fadeIn 0.5s ease';
+                
             } catch (error) {
-                document.getElementById('result').innerHTML = 
-                    `<p>错误: ${error.message}</p>`;
+                resultDiv.innerHTML = `<div class="error">❌ 请求失败: ${error.message}</div>`;
+            } finally {
+                // 恢复按钮状态
+                button.innerHTML = '获取一言';
+                button.disabled = false;
+                isLoading = false;
             }
         }
+        
+        // 页面加载完成后自动获取一次
+        window.addEventListener('load', () => {
+            setTimeout(fetchHitokoto, 500);
+        });
     </script>
 </body>
 </html>
