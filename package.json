@@ -1,0 +1,10 @@
+{
+  "name": "hitokoto-api-pages",
+  "version": "1.0.0",
+  "description": "一言API - Cloudflare Pages版本",
+  "scripts": {
+    "build": "node build-data.js",
+    "start": "echo 'Ready for deployment'"
+  },
+  "type": "module"
+}
