@@ -18,18 +18,18 @@
 
 ## 🎬 在线演示
 
-- API地址：`https://api-hitokoto.wely.fun/api`
-- 演示页面：`https://api-hitokoto.wely.fun`
+- [API地址](https://api-hitokoto.wely.fun/api)：`https://api-hitokoto.wely.fun/api`
+- [演示页面](https://api-hitokoto.wely.fun)：`https://api-hitokoto.wely.fun`
 
 ## 📋 API 使用
 
 ### 基本调用
 ```bash
-GET https://your-domain.pages.dev/api
+curl https://api-hitokoto.wely.fun/api
 ```
 
 ### 响应示例
-与官方API完全相同。
+与官方 API 返回信息格式完全相同。
 ```json
 {
   "id": 5558,
@@ -48,13 +48,17 @@ GET https://your-domain.pages.dev/api
 ```
 
 ### 字段说明
-- `id`: 句子ID
-- `uuid`: 唯一标识符
-- `hitokoto`: 句子内容
-- `type`: 句子类型
-- `from`: 句子来源
-- `from_who`: 句子作者
-- `creator`: 提交者
+- `id`: 一言标识
+- `uuid`: 一言唯一标识，可以链接到 https://hitokoto.cn?uuid=[uuid] 查看这个一言的完整信息
+- `hitokoto`: 一言正文，编码方式 unicode，使用 utf-8
+- `type`: 类型
+- `from`: 一言的出处
+- `from_who`: 一言的作者
+- `creator`: 添加者
+- `creator_uid`: 添加者用户标识
+- `reviewer`: 审核员标识
+- `commit_from`: 提交方式
+- `created_at`: 添加时间
 - `length`: 句子长度
 
 ## 🚀 快速部署
@@ -152,16 +156,6 @@ GET https://your-domain.pages.dev/api
 - 🎬 动画、漫画、游戏
 - 📚 文学、诗词、网络
 - 🎭 影视、原创、其他
-
-## 🤝 贡献指南
-
-欢迎提交 Issue 和 Pull Request！
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
 
 ## 📄 许可证
 
