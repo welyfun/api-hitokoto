@@ -61,7 +61,7 @@
 
 
         .quote-section {
-            margin-bottom: 40px;
+            margin-bottom: 16px;
             min-height: 120px;
         }
 
@@ -92,6 +92,23 @@
 
         .action-area {
             margin-bottom: 48px;
+        }
+
+        .json-display {
+            margin-bottom: 16px;
+        }
+
+        .json-display pre {
+            font-family: "SF Mono", "Cascadia Code", "Consolas", "Courier New", monospace;
+            font-size: 0.78rem;
+            line-height: 1.6;
+            color: #5c5040;
+            background: #f0ebe3;
+            padding: 16px 20px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #e8e0d6;
+            white-space: pre;
         }
 
         .refresh-btn {
@@ -259,12 +276,21 @@
             }
 
             .quote-section {
-                margin-bottom: 32px;
+                margin-bottom: 14px;
                 min-height: 100px;
             }
 
             .api-ref pre {
                 font-size: 0.75rem;
+                padding: 12px 14px;
+            }
+
+            .json-display {
+                margin-bottom: 14px;
+            }
+
+            .json-display pre {
+                font-size: 0.72rem;
                 padding: 12px 14px;
             }
         }
@@ -304,6 +330,15 @@
                 font-size: 0.7rem;
                 padding: 10px 12px;
             }
+
+            .json-display {
+                margin-bottom: 12px;
+            }
+
+            .json-display pre {
+                font-size: 0.68rem;
+                padding: 10px 12px;
+            }
         }
     </style>
 </head>
@@ -326,6 +361,10 @@
         <div class="quote-section">
             <div class="quote-display" id="quoteDisplay"></div>
             <div class="quote-meta" id="quoteMeta"></div>
+        </div>
+
+        <div class="json-display">
+            <pre id="jsonRaw"></pre>
         </div>
 
         <div class="action-area">
@@ -365,6 +404,7 @@
 
             var quoteDisplay = document.getElementById('quoteDisplay');
             var quoteMeta = document.getElementById('quoteMeta');
+            var jsonRaw = document.getElementById('jsonRaw');
             var button = document.querySelector('.refresh-btn');
             var arrow = button.querySelector('.arrow');
 
@@ -383,6 +423,8 @@
                 quoteDisplay.style.animation = 'fadeIn 0.6s ease';
                 quoteDisplay.textContent = data.hitokoto;
 
+                if (jsonRaw) jsonRaw.textContent = JSON.stringify(data, null, 2);
+
                 var metaParts = [];
                 if (data.from_who) metaParts.push(data.from_who);
                 if (data.from) metaParts.push('《' + data.from + '》');
@@ -393,6 +435,7 @@
                 quoteDisplay.style.opacity = '';
                 quoteDisplay.innerHTML = '<div class="error-display">请求失败：' + error.message + '</div>';
                 quoteMeta.innerHTML = '';
+                if (jsonRaw) jsonRaw.textContent = '';
             } finally {
                 button.innerHTML = '换一句 <span class="arrow">&rarr;</span>';
                 button.disabled = false;
@@ -406,8 +449,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
